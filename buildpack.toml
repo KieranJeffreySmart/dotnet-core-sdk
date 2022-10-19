@@ -46,6 +46,17 @@ api = "0.8"
     uri = "https://download.visualstudio.microsoft.com/download/pr/d3e46476-4494-41b7-a628-c517794c5a6a/6066215f6c0a18b070e8e6e8b715de0b/dotnet-sdk-6.0.402-linux-x64.tar.gz"
     version = "6.0.402"
 
+  [[metadata.dependencies]]
+    id = "dotnet-sdk"
+    name = "ASP.NET Core SDK"
+    licenses = ["MIT", "MIT-0"]
+    checksum = "sha512:22db5d1d16f6fcedfc46f87896920425b5d9b61d09c47d254d6ac731c6d853657882b21faf21f313ed20b33e6331d01b9f723b2c586f0e0cf5acc5ed570b0260"
+    source = "https://download.visualstudio.microsoft.com/download/pr/f5c74056-330b-452b-915e-d98fda75024e/18076ca3b89cd362162bbd0cbf9b2ca5/dotnet-sdk-7.0.100-rc.2.22477.23-linux-x64.tar.gz"
+    source-checksum = "sha512:22db5d1d16f6fcedfc46f87896920425b5d9b61d09c47d254d6ac731c6d853657882b21faf21f313ed20b33e6331d01b9f723b2c586f0e0cf5acc5ed570b0260"
+    stacks = ["io.buildpacks.stacks.bionic", "io.buildpacks.stacks.jammy"]
+    uri = "https://download.visualstudio.microsoft.com/download/pr/f5c74056-330b-452b-915e-d98fda75024e/18076ca3b89cd362162bbd0cbf9b2ca5/dotnet-sdk-7.0.100-rc.2.22477.23-linux-x64.tar.gz"
+    version = "7.0.0-0"
+
   [[metadata.dependency-constraints]]
     constraint = "3.1.*"
     id = "dotnet-sdk"
@@ -53,6 +64,11 @@ api = "0.8"
 
   [[metadata.dependency-constraints]]
     constraint = "6.0.*"
+    id = "dotnet-sdk"
+    patches = 1
+
+  [[metadata.dependency-constraints]]
+    constraint = "7.0.0-0"
     id = "dotnet-sdk"
     patches = 1
 

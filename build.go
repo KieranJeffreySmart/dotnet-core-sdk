@@ -47,6 +47,7 @@ func Build(entryResolver EntryResolver,
 		logger.Candidates(entries)
 
 		version, _ := planEntry.Metadata["version"].(string)
+		if (version == "7.0.*") { version = "7.0.0-0" }
 		versionSource, _ := planEntry.Metadata["version-source"].(string)
 
 		sdkDependency, err := dependencyManager.Resolve(filepath.Join(context.CNBPath, "buildpack.toml"), planEntry.Name, version, context.Stack)
