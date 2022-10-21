@@ -104,5 +104,8 @@ func TestIntegration(t *testing.T) {
 	suite("Default", testDefault)
 	suite("LayerReuse", testLayerReuse)
 	suite("Offline", testOffline)
+	suite("Default Net7", testDefaultNet7)
+	suite("LayerReuse Net7", testLayerReuseNet7)
+	suite("Offline Net7", testOfflineNet7)
 	suite.Run(t)
 }
