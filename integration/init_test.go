@@ -101,9 +101,9 @@ func TestIntegration(t *testing.T) {
 	Expect(json.Unmarshal(buf.Bytes(), &builder)).To(Succeed(), buf.String())
 
 	suite := spec.New("Integration", spec.Report(report.Terminal{}), spec.Parallel())
-	suite("Default", testDefault)
-	suite("LayerReuse", testLayerReuse)
-	suite("Offline", testOffline)
+	//suite("Default", testDefault)
+	//suite("LayerReuse", testLayerReuse)
+	//suite("Offline", testOffline)
 	suite("Default Net7", testDefaultNet7)
 	suite("LayerReuse Net7", testLayerReuseNet7)
 	suite("Offline Net7", testOfflineNet7)

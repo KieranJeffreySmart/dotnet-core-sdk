@@ -27,7 +27,7 @@ func testDefaultNet7(t *testing.T, context spec.G, it spec.S) {
 		docker = occam.NewDocker()
 	})
 
-	context.Focus("when building a container with dotnet sdk", func() {
+	context("when building a container with dotnet sdk", func() {
 		var (
 			image     occam.Image
 			container occam.Container
@@ -78,10 +78,10 @@ func testDefaultNet7(t *testing.T, context spec.G, it spec.S) {
 				"    Candidate version sources (in priority order):",
 				"      <unknown> -> \"\"",
 				"",
-				MatchRegexp(`    Selected .NET Core SDK version \(using <unknown>\): 7\.0\.\d+`),
+				"    Selected .NET Core SDK version (using <unknown>): 7.0.100-rc.2.22477.23",
 				"",
 				"  Executing build process",
-				MatchRegexp(`    Installing .NET Core SDK \d+\.\d+\.\d+`),
+				"    Installing .NET Core SDK 7.0.100-rc.2.22477.23",
 				MatchRegexp(`      Completed in ([0-9]*(\.[0-9]*)?[a-z]+)+`),
 				"",
 				"  Configuring build environment",

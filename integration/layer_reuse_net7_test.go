@@ -103,7 +103,7 @@ func testLayerReuseNet7(t *testing.T, context spec.G, it spec.S) {
 				"    Candidate version sources (in priority order):",
 				"      <unknown> -> \"\"",
 				"",
-				MatchRegexp(`    Selected .NET Core SDK version \(using <unknown>\): 7\.0\.\d+`),
+				"    Selected .NET Core SDK version (using <unknown>): 7.0.100-rc.2.22477.23",
 				"",
 				MatchRegexp(fmt.Sprintf("  Reusing cached layer /layers/%s/dotnet-core-sdk", strings.ReplaceAll(settings.BuildpackInfo.Buildpack.ID, "/", "_"))),
 				"",
@@ -143,7 +143,9 @@ func testLayerReuseNet7(t *testing.T, context spec.G, it spec.S) {
 			var (
 				firstImage      occam.Image
 				secondImage     occam.Image
+				thirdImage     occam.Image
 				secondContainer occam.Container
+				thirdContainer  occam.Container
 				name            string
 				source          string
 			)
@@ -215,10 +217,10 @@ func testLayerReuseNet7(t *testing.T, context spec.G, it spec.S) {
 					MatchRegexp(fmt.Sprintf(`%s \d+\.\d+\.\d+`, settings.BuildpackInfo.Buildpack.Name)),
 					"  Resolving .NET Core SDK version",
 					"    Candidate version sources (in priority order):",
-					MatchRegexp(`      BP_DOTNET_FRAMEWORK_VERSION -> "7\.0\.\*"`),
+					MatchRegexp(`      BP_DOTNET_FRAMEWORK_VERSION -> "6\.0\.\*"`),
 					"      <unknown>                   -> \"\"",
 					"",
-					MatchRegexp(`    Selected .NET Core SDK version \(using BP_DOTNET_FRAMEWORK_VERSION\): 7\.0\.\d+`),
+					MatchRegexp(`    Selected .NET Core SDK version \(using BP_DOTNET_FRAMEWORK_VERSION\): 6\.0\.\d+`),
 					"",
 					"  Executing build process",
 				))
@@ -247,13 +249,78 @@ func testLayerReuseNet7(t *testing.T, context spec.G, it spec.S) {
 						MatchRegexp(`drwxr-xr-x \d+ \w+ cnb   \d+ .* sdk-manifests`),
 						MatchRegexp(`drwxr-xr-x \d+ \w+ cnb   \d+ .* shared`),
 						MatchRegexp(`drwxr-xr-x \d+ \w+ cnb   \d+ .* templates`),
-						MatchRegexp(`drwxr-xr-x \d+ \w+ cnb \d+ .* 7\.0\.\d+`),
+						MatchRegexp(`drwxr-xr-x \d+ \w+ cnb \d+ .* 6\.0\.\d+`),
 					),
 				)
 
 				Expect(secondImage.Buildpacks[0].Layers["dotnet-core-sdk"].SHA).NotTo(Equal(firstImage.Buildpacks[0].Layers["dotnet-core-sdk"].SHA))
 			})
-		})
 
+			it("does not reuse the cached .net 7 sdk layer", func() {
+				var err error
+				source, err = occam.Source(filepath.Join("testdata", "default"))
+				Expect(err).NotTo(HaveOccurred())
+
+				var logs fmt.Stringer
+
+				thirdImage, logs, err = pack.WithNoColor().Build.
+					WithPullPolicy("never").
+					WithBuildpacks(
+						settings.Buildpacks.DotnetCoreSDK.Online,
+						settings.Buildpacks.BuildPlan.Online,
+					).
+					WithEnv(map[string]string{
+						"BP_DOTNET_FRAMEWORK_VERSION": "7.0.100-rc.2.22477.23",
+					}).
+					Execute(name, source)
+				Expect(err).NotTo(HaveOccurred(), logs.String())
+
+				imageIDs[thirdImage.ID] = struct{}{}
+
+				Expect(thirdImage.Buildpacks).To(HaveLen(2))
+				Expect(thirdImage.Buildpacks[0].Key).To(Equal(settings.BuildpackInfo.Buildpack.ID))
+				Expect(thirdImage.Buildpacks[0].Layers).To(HaveKey("dotnet-core-sdk"))
+
+				Expect(logs).To(ContainLines(
+					MatchRegexp(fmt.Sprintf(`%s \d+\.\d+\.\d+`, settings.BuildpackInfo.Buildpack.Name)),
+					"  Resolving .NET Core SDK version",
+					"    Candidate version sources (in priority order):",
+					"      BP_DOTNET_FRAMEWORK_VERSION -> \"7.0.*\"",
+					"      <unknown>                   -> \"\"",
+					"",
+					"    Selected .NET Core SDK version (using BP_DOTNET_FRAMEWORK_VERSION): 7.0.100-rc.2.22477.23",
+					"",
+					"  Executing build process",
+				))
+
+				Expect(logs).NotTo(ContainSubstring("Reusing cached layer"))
+
+				thirdContainer, err = docker.Container.Run.
+					WithCommand(fmt.Sprintf(`ls -al /layers/%s/dotnet-core-sdk && ls -al /layers/%s/dotnet-core-sdk/sdk`,
+						strings.ReplaceAll(settings.BuildpackInfo.Buildpack.ID, "/", "_"),
+						strings.ReplaceAll(settings.BuildpackInfo.Buildpack.ID, "/", "_"))).
+					Execute(thirdImage.ID)
+				Expect(err).NotTo(HaveOccurred())
+
+				containerIDs[thirdContainer.ID] = struct{}{}
+
+				Eventually(func() string {
+					cLogs, err := docker.Container.Logs.Execute(thirdContainer.ID)
+					Expect(err).NotTo(HaveOccurred())
+					return cLogs.String()
+				}).Should(
+					And(
+						MatchRegexp(`-rwxr-xr-x \d+ \w+ cnb \d+ .* dotnet`),
+						MatchRegexp(`drwxr-xr-x \d+ \w+ cnb   \d+ .* host`),
+						MatchRegexp(`drwxr-xr-x \d+ \w+ cnb   \d+ .* packs`),
+						MatchRegexp(`drwxr-xr-x \d+ \w+ cnb   \d+ .* sdk`),
+						MatchRegexp(`drwxr-xr-x \d+ \w+ cnb   \d+ .* sdk-manifests`),
+						MatchRegexp(`drwxr-xr-x \d+ \w+ cnb   \d+ .* shared`),
+						MatchRegexp(`drwxr-xr-x \d+ \w+ cnb   \d+ .* templates`),
+						MatchRegexp(`drwxr-xr-x \d+ \w+ cnb \d+ .* 7.0.100-rc.2.22477.23`),
+					),
+				)
+			})
+		})
 	}
 }

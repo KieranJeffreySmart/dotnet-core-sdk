@@ -48,7 +48,7 @@ api = "0.8"
 
   [[metadata.dependencies]]
     id = "dotnet-sdk"
-    name = "ASP.NET Core SDK"
+    name = ".NET Core SDK"
     licenses = ["MIT", "MIT-0"]
     checksum = "sha512:22db5d1d16f6fcedfc46f87896920425b5d9b61d09c47d254d6ac731c6d853657882b21faf21f313ed20b33e6331d01b9f723b2c586f0e0cf5acc5ed570b0260"
     source = "https://download.visualstudio.microsoft.com/download/pr/f5c74056-330b-452b-915e-d98fda75024e/18076ca3b89cd362162bbd0cbf9b2ca5/dotnet-sdk-7.0.100-rc.2.22477.23-linux-x64.tar.gz"
